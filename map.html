@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Mapbox GL JS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.10.0/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.10.0/mapbox-gl.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <style>
+        body { margin: 0; padding: 0; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+        #upload { position: absolute; top: 10px; left: 10px; z-index: 1; background: #fff; padding: 10px; border-radius: 3px; }
+        .marker {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        .marker img {
+            width: 20px;
+            height: 25px;
+        }
+        .residents-count {
+            display: flex;
+            align-items: center;
+            background: white;
+            padding: 2px 5px;
+            border-radius: 3px;
+            margin-top: 2px;
+            font-size: 12px;
+        }
+        .residents-count img {
+            width: 20px;
+            height: 10px;
+            margin-right: 2px;
+        }
+    </style>
+</head>
+<body>
+<div id="map"></div>
+<div id="upload">
+    <label for="fileInput">Upload CSV File: </label>
+    <input type="file" id="fileInput" />
+</div>
+<script>
+    mapboxgl.accessToken = 'pk.eyJ1IjoiYmVyZXppdWsiLCJhIjoiY2xraTFvZjJhMDE2YjNnbGVqM25taDRpcyJ9.8PHUOB9bk7PHJFVV2DR7ag';
+    const map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/bereziuk/clugymahw00ca01qq8hxkf46f',
+        center: [-73.935242, 40.730610],
+        zoom: 10
+    });
+
+    document.getElementById('fileInput').addEventListener('change', function (event) {
+        const file = event.target.files[0];
+        Papa.parse(file, {
+            header: true,
+            dynamicTyping: true,
+            complete: function(results) {
+                const data = results.data;
+                data.forEach(building => {
+                    const el = document.createElement('div');
+                    el.className = 'marker';
+
+                    const buildingIcon = document.createElement('img');
+                    buildingIcon.src = 'https://i.ibb.co/CKKL9tZ/image.png'; // Building icon
+                    el.appendChild(buildingIcon);
+
+                    const residentsCount = document.createElement('div');
+                    residentsCount.className = 'residents-count';
+                    residentsCount.innerHTML = `<img src="https://i.ibb.co/QPdct1m/image.png" /> ${building.residentsCount}`;
+                    el.appendChild(residentsCount);
+
+                    new mapboxgl.Marker(el)
+                        .setLngLat([building.lng, building.lat])
+                        .setPopup(new mapboxgl.Popup({ offset: 25 }).setText(
+                            `${building.name}: ${building.residentsCount} residents`
+                        ))
+                        .addTo(map);
+                });
+            }
+        });
+    });
+</script>
+</body>
+</html>
